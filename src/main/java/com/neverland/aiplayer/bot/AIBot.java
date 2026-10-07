@@ -8,6 +8,13 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.geysermc.mcprotocollib.network.ClientSession;
 import org.geysermc.mcprotocollib.network.Session;
+import org.geysermc.mcprotocollib.network.packet.Packet;
+import org.geysermc.mcprotocollib.network.event.session.SessionListener;
+import org.geysermc.mcprotocollib.network.event.session.PacketSendingEvent;
+import org.geysermc.mcprotocollib.network.event.session.PacketErrorEvent;
+import org.geysermc.mcprotocollib.network.event.session.ConnectedEvent;
+import org.geysermc.mcprotocollib.network.event.session.DisconnectingEvent;
+import org.geysermc.mcprotocollib.network.event.session.DisconnectedEvent;
 import org.geysermc.mcprotocollib.network.tcp.TcpClientSession;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerSetContentPacket;
@@ -79,8 +86,8 @@ public final class AIBot {
         session.send(new ServerboundChatCommandPacket(cmd));
     }
 
-    private final class SessionAdapter implements Session.Listener {
-        @Override public void packetReceived(Session session, org.geysermc.mcprotocollib.network.packet.Packet packet) {
+    private final class SessionAdapter implements SessionListener {
+        @Override public void packetReceived(Session session, Packet packet) {
             if(packet instanceof ClientboundOpenScreenPacket p) {
                 containerId=p.getContainerId(); stateId=0; guiTitle=p.getTitle().toString();
                 plugin.getLogger().info("AI GUI opened: "+guiTitle+" (#"+containerId+")");
