@@ -1,0 +1,34 @@
+bot:
+  name: NeverBot
+  host: 127.0.0.1
+  port: 0
+  spawn-world: spawn
+  auto-rtp: true
+  think-interval-ms: 3000
+  pathfinding:
+    enabled: true
+    max-distance: 32
+    step-delay-ms: 250
+  commands:
+    allowed:
+      - rtp
+      - spawn
+      - lobby
+      - survival
+      - home
+      - shop
+      - sell
+      - buy
+      - ah
+      - auctionhouse
+    blocked:
+      - op
+      - deop
+      - stop
+      - restart
+      - reload
+      - ban
+      - pardon
+      - whitelist
+      - execute
+      - permission
