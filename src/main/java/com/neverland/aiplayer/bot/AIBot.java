@@ -1,6 +1,5 @@
 package com.neverland.aiplayer.bot;
 
-import io.netty.channel.Channel;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -9,13 +8,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.geysermc.mcprotocollib.network.ClientSession;
 import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.packet.Packet;
-import org.geysermc.mcprotocollib.network.event.session.SessionListener;
-import org.geysermc.mcprotocollib.network.event.session.PacketSendingEvent;
-import org.geysermc.mcprotocollib.network.event.session.PacketErrorEvent;
-import org.geysermc.mcprotocollib.network.event.session.ConnectedEvent;
-import org.geysermc.mcprotocollib.network.event.session.DisconnectingEvent;
-import org.geysermc.mcprotocollib.network.event.session.DisconnectedEvent;
-import org.geysermc.mcprotocollib.network.tcp.TcpClientSession;
+import org.geysermc.mcprotocollib.network.event.session.SessionAdapter;
+import org.geysermc.mcprotocollib.network.factory.ClientNetworkSessionFactory;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerSetContentPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerSetSlotPacket;
@@ -51,9 +45,10 @@ public final class AIBot {
         int port=cfg.getInt("bot.port",0);
         if(port<=0) port=25565;
         MinecraftProtocol protocol=new MinecraftProtocol(name);
-        session=new TcpClientSession(host,port,protocol);
-        session.addListener(new SessionAdapter());
-        session.connect();
+        ClientSession client=ClientNetworkSessionFactory.factory().setAddress(host,port).setProtocol(protocol).create();
+        session=client;
+        session.addListener(new BotSessionAdapter());
+        client.connect();
         plugin.getLogger().info("Connecting AI player "+name+" to "+host+":"+port);
     }
 
@@ -86,7 +81,7 @@ public final class AIBot {
         session.send(new ServerboundChatCommandPacket(cmd));
     }
 
-    private final class SessionAdapter implements SessionListener {
+    private final class BotSessionAdapter extends SessionAdapter {
         @Override public void packetReceived(Session session, Packet packet) {
             if(packet instanceof ClientboundOpenScreenPacket p) {
                 containerId=p.getContainerId(); stateId=0; guiTitle=p.getTitle().toString();
@@ -101,9 +96,11 @@ public final class AIBot {
                 containerId=-1; guiTitle="";
             }
         }
-        @Override public void connected(Session session) { plugin.getLogger().info("AI player connected."); }
-        @Override public void disconnected(Session session, org.geysermc.mcprotocollib.network.DisconnectReason reason, String msg) {
-            running.set(false); plugin.getLogger().warning("AI disconnected: "+msg);
+        @Override public void connected(org.geysermc.mcprotocollib.network.event.session.ConnectedEvent event) { plugin.getLogger().info("AI player connected."); }
+        @Override public void disconnected(org.geysermc.mcprotocollib.network.event.session.DisconnectedEvent event) {
+            running.set(false);
+            String reason=event.getReason()==null?"unknown":event.getReason().toString();
+            plugin.getLogger().warning("AI disconnected: "+reason);
         }
     }
 
