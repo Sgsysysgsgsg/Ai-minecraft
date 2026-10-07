@@ -1,0 +1,12 @@
+name: AIPlayer
+version: 0.6.0
+main: com.neverland.aiplayer.AIPlayerPlugin
+api-version: '1.21'
+commands:
+  aiplayer:
+    description: Start or stop the AI player
+    usage: /aiplayer start
+    permission: aiplayer.admin
+permissions:
+  aiplayer.admin:
+    default: op
