@@ -1,0 +1,19 @@
+name: Build AIPlayer
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - run: mvn -B -U clean package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AIPlayer
+          path: target/AIPlayer-0.6.0.jar
